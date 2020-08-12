@@ -1,0 +1,36 @@
+-
+        name: Symantec API
+        hosts: localhost
+        tasks:
+                - name: test
+                  uri:
+                          url: https://10.240.120.157:8446/sepm/api/v1/identity/authenticate
+                          method: POST
+                          validate_certs: no
+                          return_content: yes
+                          body_format: json
+                          body: { "username":"jvali","password":"KbZ9Xm1c","domain":""}
+                  register: result
+                - debug: var=result
+                - name: json
+                  local_action:
+                          module: lineinfile
+                          dest: ./tokentoday4.json
+                          line: '{{result | to_nice_json}}'
+                          create: yes
+                - name: Display
+                  shell: cat ./tokentoday4.json
+                  register: result
+
+                - name: save to Json
+                  set_fact:
+                          json_data: "{{result.stdout | from_json }}"
+
+                - name: saveto Json
+                  set_fact:
+                          token: "{{ json_data | json_query(jmesquery) }}" 
+                  vars:
+                        jmesquery: 'json.token'
+                        
+                  register: result
+                - debug: var=result
